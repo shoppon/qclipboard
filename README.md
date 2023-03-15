@@ -10,4 +10,5 @@ A tool to copy text to clipboard and paste it to the frontmost application.
 # install
 
 1. run `pip install -r requirements.txt` to install requirments.
-2. double click `release/QuickClipboard-0.1.1.alfredworkflow` to install workflow.
+2. run `python3 setup.py install` to install package.
+3. double click `release/QuickClipboard-0.1.3.alfredworkflow` to install workflow.
