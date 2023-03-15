@@ -6,7 +6,7 @@ from pathlib import Path
 import yaml
 from fuzzywuzzy import process
 
-import k8s
+from quick_clipboard import k8s
 
 SOURCES = {}
 

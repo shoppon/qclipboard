@@ -1,2 +1,5 @@
 password.yaml
 .vscode
+build
+dist
+*egg-info
