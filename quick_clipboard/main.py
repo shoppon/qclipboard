@@ -12,10 +12,10 @@ SOURCES = {}
 
 
 def attach_config_cmds():
-    cwd = os.getcwd()
+    cwd = os.path.dirname(os.path.abspath(__file__))
     yaml_files = [f for f in os.listdir(cwd) if f.endswith('.yaml')]
     for f in yaml_files:
-        with open(f, 'r', encoding='utf-8') as file:
+        with open(os.path.join(cwd, f), 'r', encoding='utf-8') as file:
             content = yaml.safe_load(file)
             for k, v in content.items():
                 SOURCES[Path(f).stem + '_' + k] = v
@@ -26,7 +26,7 @@ def attach_module_cmds():
         for k, v in module.__dict__.items():
             if k.startswith('__') or not isinstance(v, str):
                 continue
-            SOURCES[module.__name__ + '_' + k] = v
+            SOURCES[module.__name__.rsplit('.', maxsplit=1)[-1] + '_' + k] = v
 
 
 def build_arg(origin):
@@ -42,11 +42,11 @@ def build_arg(origin):
     return args + origin
 
 
-def main():
+def find_best_matches(prompt):
     attach_config_cmds()
     attach_module_cmds()
 
-    matches = process.extractBests(sys.argv[1], SOURCES.keys(), limit=10)
+    matches = process.extractBests(prompt, SOURCES.keys(), limit=10)
     sys.stdout.write(json.dumps({
         "items": [{
             "uid": m[1],
@@ -56,6 +56,10 @@ def main():
             "subtitle": SOURCES[m[0]]
         } for m in matches]
     }))
+
+
+def main():
+    find_best_matches(sys.argv[1])
 
 
 if __name__ == '__main__':
