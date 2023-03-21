@@ -15,8 +15,18 @@ admin_openrc: |
   # When neutron client returns non-ascii character and stdout is piped or
   # redirected, it would raise an encoding error.
   export PYTHONIOENCODING=UTF-8
-alcubierre_log: |-
+alcubierre_disk: |-
+  kubectl exec -it -n alcubierre $(kubectl -n alcubierre get po -owide -l "application=alcubierre,component=manul" --no-headers -o jsonpath="{.items[0].metadata.name}" ) -c manul -- bash -c "kvctl list volume --format object|grep $A"
+alcubierre_disk_id: |-
+  kubectl exec -it -n alcubierre $(kubectl -n alcubierre get po -owide -l "application=alcubierre,component=manul" --no-headers -o jsonpath="{.items[0].metadata.name}" ) -c manul -- bash -c "kvctl list volume --format object|grep $A"|grep -Po "alcub_[\w-]+"
+alcubierre_create_volume: |-
   req=`for p in $(kubectl -n alcubierre get po -owide -l "application=alcubierre,component=manul" --no-headers -o custom-columns=":metadata.name");do kubectl -n alcubierre logs -c manul $p;done|grep $A|grep "Create volume"|tail -n 1|grep -Po "(?<=\[)req-[\w-]*(?= )"`;for p in $(kubectl -n alcubierre get po -owide -l "application=alcubierre,component=manul" --no-headers -o custom-columns=":metadata.name");do kubectl -n alcubierre logs -c manul $p;done|grep $req;
+alcubierre_connect: |-
+  disk=`kubectl exec -it -n alcubierre $(kubectl -n alcubierre get po -owide -l "application=alcubierre,component=manul" --no-headers -o jsonpath="{.items[0].metadata.name}" ) -c manul -- bash -c "kvctl list volume --format object|grep $A"|grep -Po "alcub_[\w-]+"`;req=`for p in $(kubectl -n alcubierre get po -owide -l "application=alcubierre,component=manul" --no-headers -o custom-columns=":metadata.name");do kubectl -n alcubierre logs -c manul $p;done|grep "/connections"|grep $disk|tail -n 1|grep -Po "(?<=\[)req-[\w-]*(?= )"`;for p in $(kubectl -n alcubierre get po -owide -l "application=alcubierre,component=manul" --no-headers -o custom-columns=":metadata.name");do kubectl -n alcubierre logs -c manul $p;done|grep $req;
+alcubierre_disconnect: |-
+  disk=`kubectl exec -it -n alcubierre $(kubectl -n alcubierre get po -owide -l "application=alcubierre,component=manul" --no-headers -o jsonpath="{.items[0].metadata.name}" ) -c manul -- bash -c "kvctl list volume --format object|grep $A"|grep -Po "alcub_[\w-]+"`;req=`for p in $(kubectl -n alcubierre get po -owide -l "application=alcubierre,component=manul" --no-headers -o custom-columns=":metadata.name");do kubectl -n alcubierre logs -c manul $p;done|grep "/disconnections"|grep $disk|tail -n 1|grep -Po "(?<=\[)req-[\w-]*(?= )"`;for p in $(kubectl -n alcubierre get po -owide -l "application=alcubierre,component=manul" --no-headers -o custom-columns=":metadata.name");do kubectl -n alcubierre logs -c manul $p;done|grep $req;
+alcubierre_delete: |-
+  disk=`kubectl exec -it -n alcubierre $(kubectl -n alcubierre get po -owide -l "application=alcubierre,component=manul" --no-headers -o jsonpath="{.items[0].metadata.name}" ) -c manul -- bash -c "kvctl list volume --format object|grep $A"|grep -Po "alcub_[\w-]+"`;req=`for p in $(kubectl -n alcubierre get po -owide -l "application=alcubierre,component=manul" --no-headers -o custom-columns=":metadata.name");do kubectl -n alcubierre logs -c manul $p;done|grep "/volumes"|grep $disk|grep DELETE|tail -n 1|grep -Po "(?<=\[)req-[\w-]*(?= )"`;for p in $(kubectl -n alcubierre get po -owide -l "application=alcubierre,component=manul" --no-headers -o custom-columns=":metadata.name");do kubectl -n alcubierre logs -c manul $p;done|grep $req;
 benchmark_private_key: |-
   -----BEGIN OPENSSH PRIVATE KEY-----
   b3BlbnNzaC1rZXktdjEAAAAABG5vbmUAAAAEbm9uZQAAAAAAAAABAAABFwAAAAdzc2gtcn
@@ -87,8 +97,6 @@ escache_unregister: "echo 1  > /sys/fs/escache/$A/unregister"
 escache_writeback_percent: "cat /sys/block/escache*/escache/writeback_percent"
 export_image: |-
   ctr -n k8s.io i export $A-`arch`-$B.tar hub.easystack.io/arm64v8/escloud-linux-source-$A:$B
-get_aldisk_id: |-
-  kubectl exec -it -n alcubierre $(kubectl -n alcubierre get po -owide -l "application=alcubierre,component=manul" --no-headers -o jsonpath="{.items[0].metadata.name}" ) -c manul -- bash -c "kvctl list volume --format object|grep $A"
 get_version: "kubectl -nopenstack get version platform -oyaml"
 helm_delete: "helm del --purge csi-alcub --key YouKnowNothingAboutRealPower"
 helm_install: "helm install --name csi-alcub --namespace $A $A-$B.tgz"
@@ -117,3 +125,4 @@ volume_info: |-
   kubectl exec -it -n alcubierre $(kubectl -n alcubierre get po -owide -l "application=alcubierre,component=manul" --no-headers -o jsonpath="{.items[0].metadata.name}" ) -c manul -- bash -c "kvctl list volume|grep -A 5 $A"
 wheel: |-
   pip wheel -cupper-constraints.txt -w wheelhouse -r requirements.txt -c upper-constraints.txt -c http://fs.easystack.cn/constraints/ecs5.0/upper-constraints.txt --index-url=http://pypi.easystack.cn/pypi/simple/ --extra-index-url=https://pypi.tuna.tsinghua.edu.cn/simple/ --trusted-host=pypi.tuna.tsinghua.edu.cn --trusted-host=pypi.easystack.cn
+close_pam: "gpasswd -d root pamauth"
