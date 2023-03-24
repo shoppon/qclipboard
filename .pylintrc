@@ -5,3 +5,4 @@ disable=
     C0115, # missing-class-docstring
     C0116, # missing-function-docstring
     W0718, # broad-exception-caught
+    C0325, # superfluous-parens

@@ -1,6 +1,4 @@
-
 import yaml
-import k8s
 
 
 class quoted(str):
@@ -25,9 +23,9 @@ def literal_presenter(dumper, data):
 yaml.add_representer(literal, literal_presenter)
 
 
-def yamlfy():
+def yamlfy(content: dict):
     atts = {}
-    for k, v in k8s.__dict__.items():
+    for k, v in content.items():
         if k.startswith('__') or not isinstance(v, str):
             continue
         if len(v) > 80:
@@ -37,5 +35,6 @@ def yamlfy():
     return yaml.dump(atts)
 
 
-with open('k8s.yaml', 'w', encoding='utf-8') as f:
-    f.write(yamlfy())
+def save_yaml(content: dict, path: str):
+    with open(path, 'w', encoding='utf-8') as f:
+        f.write(yamlfy(content))
