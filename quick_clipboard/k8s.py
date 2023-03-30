@@ -1,3 +1,5 @@
+import re
+
 from kubernetes import client
 from kubernetes import config
 
@@ -6,7 +8,8 @@ from quick_clipboard import py2yaml
 
 label_blacklist = ['pod-template-hash', 'release_group',
                    'controller-uid', 'controller-revision-hash',
-                   'pod-template-generation']
+                   'pod-template-generation', 'app',
+                   'statefulset.kubernetes.io/pod-name',]
 
 
 def get_k8s_client():
@@ -98,18 +101,23 @@ def generate_commands():
             pod_name = '_'.join(pod_name.split('-')[:-2])
         if ower and ower.kind in ('StatefulSet', 'DaemonSet'):
             pod_name = '_'.join(pod_name.split('-')[:-1])
-        commands[f'get_pod_{pod_name}'] = build_get_cmd(
+
+        pattern = r'node_[a-z0-9]+'
+        pod_name = re.sub(pattern, '', pod_name)
+        pod_name = pod_name.replace(f'{po.metadata.namespace}_', '')
+
+        commands[f'get_{pod_name}'] = build_get_cmd(
             po.metadata.namespace, selector)
-        commands[f'delete_pod_{pod_name}'] = build_delete_cmd(
+        commands[f'delete_{pod_name}'] = build_delete_cmd(
             po.metadata.namespace, selector)
 
         containers = [c.name for c in po.spec.containers]
         for c in containers:
-            commands[f'logs_pod_{pod_name}_{c}'] = build_logs_cmd(
+            commands[f'logs_{pod_name}_{c}'] = build_logs_cmd(
                 po.metadata.namespace, selector, container=c)
-            commands[f'tail_pod_{pod_name}_{c}'] = build_tail_cmd(
+            commands[f'tail_{pod_name}_{c}'] = build_tail_cmd(
                 po.metadata.namespace, selector, container=c, index="$A")
-            commands[f'exec_pod_{pod_name}_{c}'] = build_exec_cmd(
+            commands[f'exec_{pod_name}_{c}'] = build_exec_cmd(
                 po.metadata.namespace, selector, container=c, index="$A")
     # save to file
     py2yaml.save_yaml(commands, 'k8s.yaml')
