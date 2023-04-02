@@ -17,6 +17,7 @@ setup(
     entry_points={
         "console_scripts": [
             "quick-clipboard = quick_clipboard.main:main",
+            "subscription-provider = quick_clipboard.subscription_provider:main",
         ]
     },
 )
