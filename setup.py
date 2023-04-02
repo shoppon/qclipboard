@@ -2,7 +2,7 @@ from setuptools import find_packages
 from setuptools import setup
 
 setup(
-    name="quick_clipboard",
+    name="qclipboard",
     version="0.1.3",
     license="MIT",
     author="Shoppon",

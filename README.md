@@ -20,7 +20,7 @@ A tool to copy text to clipboard and paste it to the frontmost application.
 
 # expand
 
-You can add a new yaml file to `/quick_clipboard` directory.
+You can add a new yaml file to `/qclipboard` directory.
 The file content is like this:
 
 ```yaml
