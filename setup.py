@@ -16,8 +16,8 @@ setup(
     long_description_content_type="text/markdown",
     entry_points={
         "console_scripts": [
-            "quick-clipboard = quick_clipboard.main:main",
-            "subscription-provider = quick_clipboard.subscription_provider:main",
+            "qclipboard = qclipboard.main:main",
+            "qclipboard-provider = qclipboard.provider:main",
         ]
     },
 )

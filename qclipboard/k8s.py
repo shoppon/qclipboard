@@ -3,7 +3,7 @@ import re
 from kubernetes import client
 from kubernetes import config
 
-from quick_clipboard import py2yaml
+from qclipboard import py2yaml
 
 
 label_blacklist = ['pod-template-hash', 'release_group',
