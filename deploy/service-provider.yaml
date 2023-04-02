@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: provider
+  namespace: qclipboard
+spec:
+  type: ClusterIP
+  ports:
+    - name: qclipboard
+      port: 8000
+      targetPort: 8000
+      protocol: TCP
+  selector:
+    application: qclipboard
+    component: provider

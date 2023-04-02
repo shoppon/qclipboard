@@ -1,0 +1,41 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: provider
+  namespace: qclipboard
+  labels:
+    name: qclipboard
+  annotations:
+    nginx.ingress.kubernetes.io/configuration-snippet: |
+      rewrite ^/qclipboard/(.*) /$1 break;
+spec:
+  rules:
+    - host: qclipboard.shoppon.club
+      http:
+        paths:
+          - pathType: Prefix
+            path: "/"
+            backend:
+              service:
+                name: provider
+                port:
+                  number: 8000
+    - host: qclipboard.shoppon.local
+      http:
+        paths:
+          - pathType: Prefix
+            path: "/"
+            backend:
+              service:
+                name: provider
+                port:
+                  number: 8000
+    - http:
+        paths:
+          - pathType: Prefix
+            path: /qclipboard
+            backend:
+              service:
+                name: provider
+                port:
+                  number: 8000
