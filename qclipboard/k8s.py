@@ -40,11 +40,11 @@ def build_describe_cmd(namespace, label, index,
             f'--no-headers -o jsonpath="{{.items[{index}].metadata.name}}")')
 
 
-def build_logs_cmd(namespace, label, container=None, host=False):
+def build_logs_cmd(namespace, label, container=None, host=''):
     cmd = (f'for p in $(kubectl -n {namespace} get po -owide -l "{label}"'
-           f' --no-headers -o custom-columns=":metadata.name" ')
+           f' --no-headers -o custom-columns=":metadata.name"')
     if host:
-        cmd += "--field-selector spec.nodeName=$host "
+        cmd += f" --field-selector spec.nodeName={host}"
     cmd += f");do kubectl -n {namespace} logs "
     if container:
         cmd += f"-c {container} "
@@ -52,25 +52,25 @@ def build_logs_cmd(namespace, label, container=None, host=False):
     return cmd
 
 
-def build_tail_cmd(namespace, label, container=None, index=None, host=False):
+def build_tail_cmd(namespace, label, container=None, index=None, host=''):
     cmd = (f'kubectl -n {namespace} logs '
            f'$(kubectl -n {namespace} get po -owide -l "{label}" '
-           f'--no-headers -o jsonpath="{{.items[{index}].metadata.name}}" ')
+           f'--no-headers -o jsonpath="{{.items[{index}].metadata.name}}"')
     if host:
-        cmd += "--field-selector spec.nodeName=$host "
+        cmd += f" --field-selector spec.nodeName={host}"
     cmd += ") -f --tail 20"
     if container:
         cmd += f" -c {container}"
     return cmd
 
 
-def build_exec_cmd(namespace, label, index=None, container=None, host=False):
+def build_exec_cmd(namespace, label, index=None, container=None, host=''):
     cmd = (f'kubectl exec -it -n {namespace} '
-           f'$(kubectl -n {namespace} get po -owide -l "{label}" ')
+           f'$(kubectl -n {namespace} get po -owide -l "{label}"')
     if index is not None:
-        cmd += f'--no-headers -o jsonpath="{{.items[{index}].metadata.name}}" '
+        cmd += f' --no-headers -o jsonpath="{{.items[{index}].metadata.name}}"'
     if host:
-        cmd += "--field-selector spec.nodeName=$host "
+        cmd += f" --field-selector spec.nodeName={host}"
     cmd += ") "
     if container:
         cmd += f"-c {container} "
@@ -115,10 +115,15 @@ def generate_commands():
         for c in containers:
             commands[f'logs_{pod_name}_{c}'] = build_logs_cmd(
                 po.metadata.namespace, selector, container=c)
+            commands[f'logs_by_node_{pod_name}_{c}'] = build_logs_cmd(
+                po.metadata.namespace, selector, container=c, host="$A")
             commands[f'tail_{pod_name}_{c}'] = build_tail_cmd(
                 po.metadata.namespace, selector, container=c, index="$A")
             commands[f'exec_{pod_name}_{c}'] = build_exec_cmd(
                 po.metadata.namespace, selector, container=c, index="$A")
+            commands[f'exec_by_node_{pod_name}_{c}'] = build_exec_cmd(
+                po.metadata.namespace, selector, container=c, index="$A",
+                host="$B")
     # save to file
     py2yaml.save_yaml(commands, 'k8s.yaml')
 
